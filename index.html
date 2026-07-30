@@ -49,6 +49,13 @@ input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--nara
 input[type=file]{ width:100%; font-size:12px; color:#cfc6b8; font-family:'Lora'; }
 input[type=file]::file-selector-button{ font-family:'Poppins'; font-weight:600; font-size:11px; margin-right:10px;
   background:var(--naranja); color:#fff; border:0; border-radius:7px; padding:8px 12px; cursor:pointer; }
+input[type=range]{ -webkit-appearance:none; appearance:none; height:4px; background:#423c33; border-radius:3px; outline:none; }
+input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:16px; height:16px; border-radius:50%; background:var(--naranja); cursor:pointer; border:2px solid #26221c; }
+input[type=range]::-moz-range-thumb{ width:16px; height:16px; border:none; border-radius:50%; background:var(--naranja); cursor:pointer; }
+.rl{ display:flex; align-items:center; gap:10px; margin-top:8px; }
+.rl > span:first-child{ font-family:'Poppins'; font-weight:600; font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:#a49b8d; width:76px; flex:0 0 auto; }
+.rl input[type=range]{ flex:1; }
+.rl .val{ font-family:'Poppins'; font-size:11px; color:#cfc6b8; min-width:52px; text-align:right; flex:0 0 auto; }
 .check{ display:flex; align-items:center; gap:9px; font-family:'Lora'; font-size:13px; color:#e7ddcd; cursor:pointer; }
 .check input{ width:16px; height:16px; accent-color:var(--naranja); }
 .actions{ display:flex; flex-direction:column; gap:9px; margin-top:22px; }
@@ -116,6 +123,13 @@ input[type=file]::file-selector-button{ font-family:'Poppins'; font-weight:600; 
     </div>
 
     <div class="field">
+      <label class="check"><input type="checkbox" id="band" checked> Franja de color de fondo</label>
+      <div class="rl"><span>Altura</span><input type="range" id="bandPos" min="20" max="100" value="45"><span class="val" id="bandPosV">45%</span></div>
+      <div class="rl"><span>Difuminado</span><input type="range" id="fade" min="0" max="100" value="50"><span class="val" id="fadeV">50%</span></div>
+      <div class="hint">Solo en "Foto + texto". Altura 100% = sin franja; difuminado 0% = corte neto.</div>
+    </div>
+
+    <div class="field">
       <label>Color del logo</label>
       <div class="sw" id="logocolor" style="flex-wrap:wrap">
         <button class="swbtn on" data-l="blanco" title="Blanco"><span class="dot" style="background:#fff"></span></button>
@@ -125,6 +139,14 @@ input[type=file]::file-selector-button{ font-family:'Poppins'; font-weight:600; 
         <button class="swbtn" data-l="verde" title="Verde"><span class="dot" style="background:#00955A"></span></button>
         <button class="swbtn" data-l="verdeclaro" title="V. claro"><span class="dot" style="background:#5BAC28"></span></button>
       </div>
+    </div>
+
+    <div class="field">
+      <label>Logo · tamaño y posición</label>
+      <div class="rl"><span>Tamaño</span><input type="range" id="logoScale" min="40" max="170" value="100"><span class="val" id="logoScaleV">100%</span></div>
+      <div class="rl"><span>Horizontal</span><input type="range" id="logoX" min="0" max="100" value="50"><span class="val" id="logoXV">centro</span></div>
+      <div class="rl"><span>Vertical</span><input type="range" id="logoY" min="0" max="85" value="5"><span class="val" id="logoYV">5%</span></div>
+      <div class="hint">Desplazá el logo si queda mal sobre la foto.</div>
     </div>
 
     <hr class="hr">
@@ -187,6 +209,7 @@ const state = {
   w:1080, h:1350, style:'foto', accent:'#E3421E',
   images:[],           // {img, name}
   active:0, onlyfirst:true, logoColor:'blanco',
+  band:true, bandPos:45, fade:50, logoScale:100, logoX:50, logoY:5,
 };
 const HUESO='#F2ECE1', INK='#1A1815';
 
@@ -230,9 +253,11 @@ async function render(ctx, cfg, imageObj, withText){
     ctx.fillRect(0,0,w,h);
   }
 
-  // logo arriba, centrado y más grande
-  const ld = Math.round(w*0.20);
-  roundLogo(ctx, Math.round((w-ld)/2), Math.round(h*0.05), ld);
+  // logo con tamaño y posición ajustables
+  const ld = Math.round(w*0.20*state.logoScale/100);
+  const lx = Math.round(w*state.logoX/100 - ld/2);
+  const ly = Math.round(h*state.logoY/100);
+  roundLogo(ctx, lx, ly, ld);
 
   if(!withText){
     // placa de continuación: solo foto + logo + firma
@@ -241,14 +266,18 @@ async function render(ctx, cfg, imageObj, withText){
   }
 
   if(style==='foto' && imageObj){
-    // banda de color de fondo detrás del bloque de texto
     const bg = accent==='#1A1815' ? INK : accent;
-    const yBand = Math.round(h*0.55);
-    const fade = Math.round(h*0.07);
-    const g = ctx.createLinearGradient(0,yBand-fade,0,yBand);
-    g.addColorStop(0, hexA(bg,0)); g.addColorStop(1, bg);
-    ctx.fillStyle=g; ctx.fillRect(0,yBand-fade,w,fade);
-    ctx.fillStyle=bg; ctx.fillRect(0,yBand,w,h-yBand);
+    if(state.band && state.bandPos<100){
+      const yBand = Math.round(h*state.bandPos/100);
+      const fade = Math.round(h*0.20*state.fade/100);
+      if(fade>0){ const g=ctx.createLinearGradient(0,yBand-fade,0,yBand); g.addColorStop(0,hexA(bg,0)); g.addColorStop(1,bg); ctx.fillStyle=g; ctx.fillRect(0,yBand-fade,w,fade); }
+      ctx.fillStyle=bg; ctx.fillRect(0,yBand,w,h-yBand);
+    } else {
+      // sin franja: degradado oscuro para legibilidad del texto
+      const gTop=Math.round(h*0.45), g=ctx.createLinearGradient(0,gTop,0,h);
+      g.addColorStop(0,'rgba(26,24,21,0)'); g.addColorStop(0.55,'rgba(26,24,21,0.7)'); g.addColorStop(1,'rgba(26,24,21,0.94)');
+      ctx.fillStyle=g; ctx.fillRect(0,gTop,w,h-gTop);
+    }
   }
 
   // --- bloque de texto anclado abajo ---
@@ -403,6 +432,14 @@ document.querySelectorAll('#logocolor button').forEach(b=>b.onclick=()=>{
 });
 ['eyebrow','title','body'].forEach(id=>document.getElementById(id).addEventListener('input',draw));
 document.getElementById('onlyfirst').addEventListener('change',e=>{ state.onlyfirst=e.target.checked; draw(); });
+document.getElementById('band').addEventListener('change',e=>{ state.band=e.target.checked; draw(); });
+function bindRange(id,fmt){ const el=document.getElementById(id), v=document.getElementById(id+'V');
+  el.addEventListener('input',()=>{ state[id]=+el.value; if(v) v.textContent=fmt(+el.value); draw(); }); }
+bindRange('bandPos', v=>v+'%');
+bindRange('fade', v=>v+'%');
+bindRange('logoScale', v=>v+'%');
+bindRange('logoX', v=> v===50?'centro':(v<50?'← '+((50-v)*2)+'%':'→ '+((v-50)*2)+'%'));
+bindRange('logoY', v=>v+'%');
 document.getElementById('imgs').addEventListener('change', e=>{
   const files=[...e.target.files];
   let pending=files.length; if(!pending) return;
