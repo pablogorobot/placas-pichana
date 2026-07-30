@@ -58,6 +58,16 @@ input[type=range]::-moz-range-thumb{ width:16px; height:16px; border:none; borde
 .rl .val{ font-family:'Poppins'; font-size:11px; color:#cfc6b8; min-width:52px; text-align:right; flex:0 0 auto; }
 .check{ display:flex; align-items:center; gap:9px; font-family:'Lora'; font-size:13px; color:#e7ddcd; cursor:pointer; }
 .check input{ width:16px; height:16px; accent-color:var(--naranja); }
+#tono{ margin-top:2px; }
+.tono-ok{ font-family:'Poppins'; font-size:11.5px; color:#8fce9f; display:flex; gap:7px; align-items:center; }
+.tono-item{ display:flex; gap:8px; align-items:flex-start; background:#2a2118; border:1px solid #5a4a1e; border-left:3px solid var(--amarillo); border-radius:8px; padding:8px 10px; margin-top:7px; }
+.tono-item .ic{ color:var(--amarillo); font-weight:700; font-family:'Poppins'; flex:0 0 auto; line-height:1.4; }
+.tono-item .tx{ font-family:'Lora'; font-size:12px; line-height:1.4; color:#e7ddcd; }
+.tono-item .tx b{ font-family:'Poppins'; font-weight:600; color:#fff; }
+.tono-more{ margin-top:10px; }
+.tono-more summary{ font-family:'Poppins'; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#a49b8d; cursor:pointer; }
+.tono-more ul{ margin:8px 0 0; padding-left:16px; font-family:'Lora'; font-size:11.5px; line-height:1.5; color:#cfc6b8; }
+.tono-more li{ margin-bottom:4px; } .tono-more b{ font-family:'Poppins'; font-weight:600; color:#e7ddcd; }
 .actions{ display:flex; flex-direction:column; gap:9px; margin-top:22px; }
 .btn{ cursor:pointer; border:0; border-radius:9px; padding:13px; font-weight:700; font-size:13px; font-family:'Poppins'; }
 .btn.pri{ background:var(--naranja); color:#fff; }
@@ -162,6 +172,17 @@ input[type=range]::-moz-range-thumb{ width:16px; height:16px; border:none; borde
     <div class="field">
       <label>Texto descriptivo</label>
       <textarea id="body" placeholder="Bajada o descripción breve.">Salimos a recorrer el territorio para prevenir incendios y acompañar a los vecinos de la cuenca.</textarea>
+      <div id="tono"></div>
+      <details class="tono-more">
+        <summary>Criterios de tono del manual</summary>
+        <ul>
+          <li><b>1ª persona del plural</b>: "fuimos", "hicimos". Hablamos como La Brigada.</li>
+          <li><b>Inclusivo sin marcar género</b>: "persona" (no "hombre/mujer"), "integrante" (no "miembro").</li>
+          <li><b>No nombramos personas</b>: "desde el área de Vivero", "integrantes del equipo de combate".</li>
+          <li><b>Evitar</b> tono heroico/mesiánico ("Salvemos"), New Age ("guardianes de la pacha") y grandilocuencia/alarmismo.</li>
+          <li><b>Palabras clave</b>: territorio, aliados territoriales, acción comunitaria, prevención.</li>
+        </ul>
+      </details>
     </div>
     <div class="field">
       <label>Imágenes</label>
@@ -430,7 +451,7 @@ document.querySelectorAll('#logocolor button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#logocolor button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
   state.logoColor=b.dataset.l; draw();
 });
-['eyebrow','title','body'].forEach(id=>document.getElementById(id).addEventListener('input',draw));
+['eyebrow','title','body'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{ draw(); analizarTono(); }));
 document.getElementById('onlyfirst').addEventListener('change',e=>{ state.onlyfirst=e.target.checked; draw(); });
 document.getElementById('band').addEventListener('change',e=>{ state.band=e.target.checked; draw(); });
 function bindRange(id,fmt){ const el=document.getElementById(id), v=document.getElementById(id+'V');
@@ -464,9 +485,38 @@ document.getElementById('copycap').onclick=async()=>{
   const o=btn.textContent; btn.textContent='¡Copiado!'; setTimeout(()=>btn.textContent=o,1200);
 };
 
+/* ---------- chequeo de tono vs. manual ---------- */
+const TONO_EVITAR=[
+ {re:/\bsalv(a|á|e|en|emos|ar|amos|ando|ó|o)\b/i, m:'<b>Tono heroico.</b> El manual evita el discurso salvador ("Salvemos"). Contá la tarea concreta.'},
+ {re:/\bh[ée]roes?\b|\bheroic[oa]s?\b|\bmesi[áa]nic|\bgesta\b|\bhaza[ñn]a\b|\bproeza\b|\bcruzada\b/i, m:'<b>Heroico/mesiánico.</b> El trabajo es colectivo y voluntario, no heroico.'},
+ {re:/\bguardian(es|a|as)?\b|\bpacha\b|madre tierra|\benerg[íi]as?\b|sanaci[óo]n|espiritual|\bsagrad[oa]s?\b/i, m:'<b>Registro New Age.</b> El manual evita "guardianes de la pacha" y similares.'},
+ {re:/\bcat[áa]strofe\b|apocalip|devastaci[óo]n|\btragedia\b|\binfierno\b|\bterror\b|\bhorror\b/i, m:'<b>Grandilocuencia/alarmismo.</b> Preferí el dato verificable y la tarea concreta.'},
+ {re:/!{2,}/, m:'<b>Alarmismo.</b> Bajá los signos de exclamación: el tono es sobrio y concreto.'},
+ {re:/\bmiembros?\b/i, m:'Usá <b>"integrante/s"</b> en vez de "miembro" (guía de inclusión del manual).'},
+ {re:/\bhombres?\b|\bmujeres?\b/i, m:'Preferí <b>"persona/s"</b> para no marcar género, salvo que sea necesario.'}
+];
+function tildeless(x){ return x.normalize('NFD').replace(/[̀-ͯ]/g,''); }
+function analizarTono(){
+  const box=document.getElementById('tono'); if(!box) return;
+  const t=[document.getElementById('eyebrow').value, document.getElementById('title').value, document.getElementById('body').value].join('  ').trim();
+  const words=t.split(/\s+/).filter(Boolean).length;
+  const avisos=[];
+  if(words>0){
+    for(const r of TONO_EVITAR){ if(r.re.test(t)) avisos.push(r.m); }
+    const low=tildeless(t.toLowerCase());
+    const pares=[['vecinos','vecinas'],['compañeros','compañeras'],['voluntarios','voluntarias'],['todos','todas'],['ciudadanos','ciudadanas'],['hermanos','hermanas'],['bomberos','bomberas'],['aliados','aliadas']];
+    for(const p of pares){ const m=tildeless(p[0]); const f=tildeless(p[1]);
+      if(new RegExp('\\b'+m+'\\b').test(low) && !new RegExp('\\b'+f+'\\b').test(low)){ avisos.push('Para inclusión, considerá "<b>'+p[1]+' y '+p[0]+'</b>" o una forma neutra.'); break; } }
+    if(words>=6 && !/\b(nosotr|nuestr|nos)\b|\w+(amos|emos|imos)\b/i.test(t))
+      avisos.push('Escribí en <b>1ª persona plural</b> ("hicimos", "nuestro territorio"): hablamos como La Brigada.');
+  }
+  if(!avisos.length){ box.innerHTML='<div class="tono-ok">✓ Sin observaciones de tono</div>'; return; }
+  box.innerHTML=avisos.map(a=>'<div class="tono-item"><span class="ic">!</span><span class="tx">'+a+'</span></div>').join('');
+}
+
 /* init */
 if(logoImg.complete) draw(); else logoImg.onload=draw;
-draw();
+draw(); analizarTono();
 </script>
 </body>
 </html>
