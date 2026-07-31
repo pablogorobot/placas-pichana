@@ -316,7 +316,7 @@ async function render(ctx, cfg, imageObj, withText){
   if(body){
     const bs = Math.round(w*0.033);
     ctx.font = `400 ${bs}px Lora, serif`;
-    bodyLines = wrapLines(ctx, body, maxW);
+    body.split('\n').forEach(part=>{ part=part.replace(/\s+$/,''); bodyLines = bodyLines.concat(part ? wrapLines(ctx, part, maxW) : ['']); });
     const blh = Math.round(bs*1.42);
     let by = cursorBottom;
     for(let i=bodyLines.length-1;i>=0;i--){ ctx.fillStyle=bodyColor; ctx.fillText(bodyLines[i], M, by); by-=blh; }
