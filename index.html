@@ -32,6 +32,8 @@ h1,h2,h3,label,button,.k,.eyebrow{ font-family:'Poppins',sans-serif; }
 .panel .brand .t{ font-weight:700; font-size:15px; letter-spacing:-.01em; }
 .panel .brand .s{ font-size:11px; color:#b9b0a2; font-family:'Lora'; font-style:italic; }
 .hr{ height:1px; background:#3a352d; margin:20px 0; border:0; }
+.sec-h{ font-family:'Poppins'; font-weight:700; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--amarillo); margin:26px 0 13px; padding-bottom:8px; border-bottom:1px solid #3a352d; }
+.sec-h:first-of-type{ margin-top:4px; }
 .field{ margin-bottom:16px; }
 .field > label{ display:block; font-weight:600; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--amarillo); margin-bottom:7px; }
 .field .hint{ font-size:10.5px; color:#a49b8d; font-family:'Lora'; margin-top:5px; line-height:1.4; }
@@ -115,7 +117,8 @@ input[type=range]::-moz-range-thumb{ width:16px; height:16px; border:none; borde
       <img id="brandlogo" alt="">
       <div><div class="t">Generador de placas</div><div class="s">Brigada Pichana · Instagram</div></div>
     </div>
-    <hr class="hr">
+
+    <div class="sec-h">1 · Formato</div>
 
     <div class="field">
       <label>Formato</label>
@@ -133,6 +136,54 @@ input[type=range]::-moz-range-thumb{ width:16px; height:16px; border:none; borde
         <button data-style="frase">Frase (sin foto)</button>
       </div>
     </div>
+
+    <div class="sec-h">2 · Contenido</div>
+
+    <div class="field">
+      <label>Etiqueta <span style="color:#8f877a;font-weight:500">(opcional)</span></label>
+      <textarea id="eyebrow" rows="2" style="min-height:46px" placeholder="Ej.: COMUNIDAD · RESTAURACIÓN&#10;(podés usar más de un renglón)"></textarea>
+      <div class="rl"><span>Tamaño</span><input type="range" id="ebScale" min="55" max="180" value="100"><span class="val" id="ebScaleV">100%</span></div>
+    </div>
+    <div class="field">
+      <label>Título</label>
+      <input type="text" id="title" placeholder="Escribí el título de la placa" value="Cuidamos el monte entre todas y todos">
+      <div class="rl"><span>Tamaño</span><input type="range" id="titleScale" min="55" max="160" value="100"><span class="val" id="titleScaleV">100%</span></div>
+    </div>
+    <div class="field">
+      <label>Texto descriptivo</label>
+      <textarea id="body" placeholder="Bajada o descripción breve.">Salimos a recorrer el territorio para prevenir incendios y acompañar a los vecinos de la cuenca.</textarea>
+      <div id="tono"></div>
+      <details class="tono-more">
+        <summary>Criterios de tono del manual</summary>
+        <ul>
+          <li><b>1ª persona del plural</b>: "fuimos", "hicimos". Hablamos como La Brigada.</li>
+          <li><b>Inclusivo sin marcar género</b>: "persona" (no "hombre/mujer"), "integrante" (no "miembro").</li>
+          <li><b>No nombramos personas</b>: "desde el área de Vivero", "integrantes del equipo de combate".</li>
+          <li><b>Evitar</b> tono heroico/mesiánico ("Salvemos"), New Age ("guardianes de la pacha") y grandilocuencia/alarmismo.</li>
+          <li><b>Palabras clave</b>: territorio, aliados territoriales, acción comunitaria, prevención.</li>
+        </ul>
+      </details>
+    </div>
+    <div class="field">
+      <label>Imágenes</label>
+      <input type="file" id="imgs" accept="image/*" multiple>
+      <div class="hint">Podés cargar varias: se genera una placa por imagen (carrusel).</div>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="onlyfirst" checked> Solo la primera placa lleva textos</label>
+    </div>
+
+    <div class="field">
+      <label>Pie de publicación (caption)</label>
+      <textarea id="caption" placeholder="Texto que va DEBAJO de la foto al publicar en IG. No se dibuja en la placa."></textarea>
+      <div class="hint">No se dibuja en la placa: es para copiar y pegar en Instagram.</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn sec" id="gencap" style="flex:1;padding:10px">Armar desde título + texto</button>
+        <button class="btn sec" id="copycap" style="flex:1;padding:10px">Copiar</button>
+      </div>
+    </div>
+
+    <div class="sec-h">3 · Apariencia</div>
 
     <div class="field">
       <label>Color de fondo</label>
@@ -207,52 +258,6 @@ input[type=range]::-moz-range-thumb{ width:16px; height:16px; border:none; borde
       <div class="rl"><span>Horizontal</span><input type="range" id="logoX" min="0" max="100" value="50"><span class="val" id="logoXV">centro</span></div>
       <div class="rl"><span>Vertical</span><input type="range" id="logoY" min="0" max="85" value="5"><span class="val" id="logoYV">5%</span></div>
       <div class="hint">Desplazá el logo si queda mal sobre la foto.</div>
-    </div>
-
-    <hr class="hr">
-
-    <div class="field">
-      <label>Etiqueta <span style="color:#8f877a;font-weight:500">(opcional)</span></label>
-      <textarea id="eyebrow" rows="2" style="min-height:46px" placeholder="Ej.: COMUNIDAD · RESTAURACIÓN&#10;(podés usar más de un renglón)"></textarea>
-      <div class="rl"><span>Tamaño</span><input type="range" id="ebScale" min="55" max="180" value="100"><span class="val" id="ebScaleV">100%</span></div>
-    </div>
-    <div class="field">
-      <label>Título</label>
-      <input type="text" id="title" placeholder="Escribí el título de la placa" value="Cuidamos el monte entre todas y todos">
-      <div class="rl"><span>Tamaño</span><input type="range" id="titleScale" min="55" max="160" value="100"><span class="val" id="titleScaleV">100%</span></div>
-    </div>
-    <div class="field">
-      <label>Texto descriptivo</label>
-      <textarea id="body" placeholder="Bajada o descripción breve.">Salimos a recorrer el territorio para prevenir incendios y acompañar a los vecinos de la cuenca.</textarea>
-      <div id="tono"></div>
-      <details class="tono-more">
-        <summary>Criterios de tono del manual</summary>
-        <ul>
-          <li><b>1ª persona del plural</b>: "fuimos", "hicimos". Hablamos como La Brigada.</li>
-          <li><b>Inclusivo sin marcar género</b>: "persona" (no "hombre/mujer"), "integrante" (no "miembro").</li>
-          <li><b>No nombramos personas</b>: "desde el área de Vivero", "integrantes del equipo de combate".</li>
-          <li><b>Evitar</b> tono heroico/mesiánico ("Salvemos"), New Age ("guardianes de la pacha") y grandilocuencia/alarmismo.</li>
-          <li><b>Palabras clave</b>: territorio, aliados territoriales, acción comunitaria, prevención.</li>
-        </ul>
-      </details>
-    </div>
-    <div class="field">
-      <label>Imágenes</label>
-      <input type="file" id="imgs" accept="image/*" multiple>
-      <div class="hint">Podés cargar varias: se genera una placa por imagen (carrusel).</div>
-    </div>
-    <div class="field">
-      <label class="check"><input type="checkbox" id="onlyfirst" checked> Solo la primera placa lleva textos</label>
-    </div>
-
-    <div class="field">
-      <label>Pie de publicación (caption)</label>
-      <textarea id="caption" placeholder="Texto que va DEBAJO de la foto al publicar en IG. No se dibuja en la placa."></textarea>
-      <div class="hint">No se dibuja en la placa: es para copiar y pegar en Instagram.</div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button class="btn sec" id="gencap" style="flex:1;padding:10px">Armar desde título + texto</button>
-        <button class="btn sec" id="copycap" style="flex:1;padding:10px">Copiar</button>
-      </div>
     </div>
 
     <div class="actions">
