@@ -187,6 +187,7 @@ input[type=range]::-moz-range-thumb{ width:16px; height:16px; border:none; borde
     <div class="field">
       <label>Etiqueta <span style="color:#8f877a;font-weight:500">(opcional)</span></label>
       <textarea id="eyebrow" rows="2" style="min-height:46px" placeholder="Ej.: COMUNIDAD · RESTAURACIÓN&#10;(podés usar más de un renglón)"></textarea>
+      <div class="rl"><span>Tamaño</span><input type="range" id="ebScale" min="55" max="180" value="100"><span class="val" id="ebScaleV">100%</span></div>
     </div>
     <div class="field">
       <label>Título</label>
@@ -253,7 +254,7 @@ document.getElementById('brandlogo').src=LOGOS.blanco;
 const state = {
   w:1080, h:1350, style:'foto', accent:'#E3421E',
   images:[],           // {img, name}
-  active:0, onlyfirst:true, logoColor:'blanco', textColor:'#F2ECE1', align:'left',
+  active:0, onlyfirst:true, logoColor:'blanco', textColor:'#F2ECE1', align:'left', ebScale:100,
   band:true, bandPos:45, fade:50, logoScale:100, logoX:50, logoY:5, titleScale:100,
 };
 const HUESO='#F2ECE1', INK='#1A1815';
@@ -376,7 +377,7 @@ async function render(ctx, cfg, imageObj, withText){
 
   // etiqueta / eyebrow (multilínea: respeta saltos y ajusta por ancho)
   if(eyebrow){
-    const es = Math.round(w*0.024);
+    const es = Math.round(w*0.024*state.ebScale/100);
     ctx.font = `600 ${es}px Poppins, sans-serif`;
     ctx.fillStyle = state.textColor;
     ctx.save(); ctx.letterSpacing = `${Math.round(es*0.18)}px`;
@@ -504,6 +505,7 @@ bindRange('bandPos', v=>v+'%');
 bindRange('fade', v=>v+'%');
 bindRange('logoScale', v=>v+'%');
 bindRange('titleScale', v=>v+'%');
+bindRange('ebScale', v=>v+'%');
 bindRange('logoX', v=> v===50?'centro':(v<50?'← '+((50-v)*2)+'%':'→ '+((v-50)*2)+'%'));
 bindRange('logoY', v=>v+'%');
 document.getElementById('imgs').addEventListener('change', e=>{
