@@ -163,7 +163,7 @@ input[type=range]::-moz-range-thumb{ width:16px; height:16px; border:none; borde
 
     <div class="field">
       <label>Etiqueta <span style="color:#8f877a;font-weight:500">(opcional)</span></label>
-      <input type="text" id="eyebrow" placeholder="Ej.: COMUNIDAD · RESTAURACIÓN · AVISO" maxlength="34">
+      <textarea id="eyebrow" rows="2" style="min-height:46px" placeholder="Ej.: COMUNIDAD · RESTAURACIÓN&#10;(podés usar más de un renglón)"></textarea>
     </div>
     <div class="field">
       <label>Título</label>
@@ -345,13 +345,17 @@ async function render(ctx, cfg, imageObj, withText){
     cursorBottom = ty + tlh - ts - Math.round(h*0.05);
   }
 
-  // etiqueta / eyebrow
+  // etiqueta / eyebrow (multilínea: respeta saltos y ajusta por ancho)
   if(eyebrow){
     const es = Math.round(w*0.024);
     ctx.font = `600 ${es}px Poppins, sans-serif`;
     ctx.fillStyle = '#F6B200';
     ctx.save(); ctx.letterSpacing = `${Math.round(es*0.18)}px`;
-    ctx.fillText(eyebrow, M, cursorBottom);
+    let elines=[];
+    eyebrow.split('\n').forEach(part=>{ part=part.trim(); if(part) elines=elines.concat(wrapLines(ctx, part, maxW)); });
+    const elh = Math.round(es*1.5);
+    let ey = cursorBottom;
+    for(let i=elines.length-1;i>=0;i--){ ctx.fillText(elines[i], M, ey); ey-=elh; }
     ctx.restore();
   }
 }
