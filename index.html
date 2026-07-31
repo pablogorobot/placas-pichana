@@ -140,6 +140,20 @@ input[type=range]::-moz-range-thumb{ width:16px; height:16px; border:none; borde
     </div>
 
     <div class="field">
+      <label>Color del texto</label>
+      <div class="sw" id="txtcolor" style="flex-wrap:wrap">
+        <button class="swbtn on" data-c="#F2ECE1" title="Hueso"><span class="dot" style="background:#F2ECE1"></span></button>
+        <button class="swbtn" data-c="#FFFFFF" title="Blanco"><span class="dot" style="background:#fff"></span></button>
+        <button class="swbtn" data-c="#F6B200" title="Amarillo"><span class="dot" style="background:#F6B200"></span></button>
+        <button class="swbtn" data-c="#E3421E" title="Naranja"><span class="dot" style="background:#E3421E"></span></button>
+        <button class="swbtn" data-c="#00955A" title="Verde"><span class="dot" style="background:#00955A"></span></button>
+        <button class="swbtn" data-c="#5BAC28" title="V. claro"><span class="dot" style="background:#5BAC28"></span></button>
+        <button class="swbtn" data-c="#1A1815" title="Negro"><span class="dot" style="background:#1A1815"></span></button>
+      </div>
+      <div class="hint">Un solo color para título, etiqueta, texto, barra y firma.</div>
+    </div>
+
+    <div class="field">
       <label>Color del logo</label>
       <div class="sw" id="logocolor" style="flex-wrap:wrap">
         <button class="swbtn on" data-l="blanco" title="Blanco"><span class="dot" style="background:#fff"></span></button>
@@ -230,7 +244,7 @@ document.getElementById('brandlogo').src=LOGOS.blanco;
 const state = {
   w:1080, h:1350, style:'foto', accent:'#E3421E',
   images:[],           // {img, name}
-  active:0, onlyfirst:true, logoColor:'blanco',
+  active:0, onlyfirst:true, logoColor:'blanco', textColor:'#F2ECE1',
   band:true, bandPos:45, fade:50, logoScale:100, logoX:50, logoY:5, titleScale:100,
 };
 const HUESO='#F2ECE1', INK='#1A1815';
@@ -311,7 +325,7 @@ async function render(ctx, cfg, imageObj, withText){
   cursorBottom = h - M - sigH - Math.round(h*0.02);
 
   // texto descriptivo
-  const bodyColor = (style==='frase') ? 'rgba(242,236,225,0.92)' : 'rgba(242,236,225,0.90)';
+  const bodyColor = hexA(state.textColor, style==='frase' ? 0.92 : 0.9);
   let bodyLines=[];
   if(body){
     const bs = Math.round(w*0.033);
@@ -336,12 +350,12 @@ async function render(ctx, cfg, imageObj, withText){
     }
     // barra de acento
     const barTop = cursorBottom - tLines.length*tlh - Math.round(h*0.022);
-    ctx.fillStyle = '#F6B200';
+    ctx.fillStyle = state.textColor;
     if(style==='foto'){
       ctx.fillRect(M, barTop, Math.round(w*0.075), Math.round(h*0.006));
     }
     let ty = cursorBottom;
-    ctx.fillStyle = HUESO;
+    ctx.fillStyle = state.textColor;
     for(let i=tLines.length-1;i>=0;i--){ ctx.fillText(tLines[i], M, ty); ty-=tlh; }
     cursorBottom = ty + tlh - ts - Math.round(h*0.05);
   }
@@ -350,7 +364,7 @@ async function render(ctx, cfg, imageObj, withText){
   if(eyebrow){
     const es = Math.round(w*0.024);
     ctx.font = `600 ${es}px Poppins, sans-serif`;
-    ctx.fillStyle = '#F6B200';
+    ctx.fillStyle = state.textColor;
     ctx.save(); ctx.letterSpacing = `${Math.round(es*0.18)}px`;
     let elines=[];
     eyebrow.split('\n').forEach(part=>{ part=part.trim(); if(part) elines=elines.concat(wrapLines(ctx, part, maxW)); });
@@ -364,7 +378,7 @@ async function render(ctx, cfg, imageObj, withText){
 function signature(ctx,w,h,M){
   const s = Math.round(w*0.021);
   ctx.font = `600 ${s}px Poppins, sans-serif`;
-  ctx.fillStyle = 'rgba(242,236,225,0.75)';
+  ctx.fillStyle = hexA(state.textColor, 0.75);
   ctx.save(); ctx.letterSpacing = `${Math.round(s*0.14)}px`;
   const txt='@BRIGADA.PICHANA';
   ctx.fillText(txt, M, h - M);
@@ -455,6 +469,10 @@ document.querySelectorAll('#accent button').forEach(b=>b.onclick=()=>{
 document.querySelectorAll('#logocolor button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#logocolor button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
   state.logoColor=b.dataset.l; draw();
+});
+document.querySelectorAll('#txtcolor button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#txtcolor button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  state.textColor=b.dataset.c; draw();
 });
 ['eyebrow','title','body'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{ draw(); analizarTono(); }));
 document.getElementById('onlyfirst').addEventListener('change',e=>{ state.onlyfirst=e.target.checked; draw(); });
