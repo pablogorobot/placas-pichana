@@ -154,6 +154,15 @@ input[type=range]::-moz-range-thumb{ width:16px; height:16px; border:none; borde
     </div>
 
     <div class="field">
+      <label>Alineación del texto</label>
+      <div class="seg" id="align">
+        <button data-a="left" class="on">Izquierda</button>
+        <button data-a="center">Centro</button>
+        <button data-a="right">Derecha</button>
+      </div>
+    </div>
+
+    <div class="field">
       <label>Color del logo</label>
       <div class="sw" id="logocolor" style="flex-wrap:wrap">
         <button class="swbtn on" data-l="blanco" title="Blanco"><span class="dot" style="background:#fff"></span></button>
@@ -244,7 +253,7 @@ document.getElementById('brandlogo').src=LOGOS.blanco;
 const state = {
   w:1080, h:1350, style:'foto', accent:'#E3421E',
   images:[],           // {img, name}
-  active:0, onlyfirst:true, logoColor:'blanco', textColor:'#F2ECE1',
+  active:0, onlyfirst:true, logoColor:'blanco', textColor:'#F2ECE1', align:'left',
   band:true, bandPos:45, fade:50, logoScale:100, logoX:50, logoY:5, titleScale:100,
 };
 const HUESO='#F2ECE1', INK='#1A1815';
@@ -319,6 +328,9 @@ async function render(ctx, cfg, imageObj, withText){
   // --- bloque de texto anclado abajo ---
   const maxW = w - M*2;
   let cursorBottom = h - M;
+  const align = state.align||'left';
+  const ax = align==='center' ? Math.round(w/2) : (align==='right' ? w-M : M);
+  ctx.textAlign = align;
 
   // firma primero (ocupa lo más bajo)
   const sigH = signature(ctx,w,h,M);
@@ -333,7 +345,7 @@ async function render(ctx, cfg, imageObj, withText){
     body.split('\n').forEach(part=>{ part=part.replace(/\s+$/,''); bodyLines = bodyLines.concat(part ? wrapLines(ctx, part, maxW) : ['']); });
     const blh = Math.round(bs*1.42);
     let by = cursorBottom;
-    for(let i=bodyLines.length-1;i>=0;i--){ ctx.fillStyle=bodyColor; ctx.fillText(bodyLines[i], M, by); by-=blh; }
+    for(let i=bodyLines.length-1;i>=0;i--){ ctx.fillStyle=bodyColor; ctx.fillText(bodyLines[i], ax, by); by-=blh; }
     cursorBottom = by + blh - Math.round(bs*1.35) - Math.round(h*0.025);
   }
 
@@ -352,11 +364,13 @@ async function render(ctx, cfg, imageObj, withText){
     const barTop = cursorBottom - tLines.length*tlh - Math.round(h*0.022);
     ctx.fillStyle = state.textColor;
     if(style==='foto'){
-      ctx.fillRect(M, barTop, Math.round(w*0.075), Math.round(h*0.006));
+      const barW = Math.round(w*0.075);
+      const barX = align==='center' ? Math.round((w-barW)/2) : (align==='right' ? w-M-barW : M);
+      ctx.fillRect(barX, barTop, barW, Math.round(h*0.006));
     }
     let ty = cursorBottom;
     ctx.fillStyle = state.textColor;
-    for(let i=tLines.length-1;i>=0;i--){ ctx.fillText(tLines[i], M, ty); ty-=tlh; }
+    for(let i=tLines.length-1;i>=0;i--){ ctx.fillText(tLines[i], ax, ty); ty-=tlh; }
     cursorBottom = ty + tlh - ts - Math.round(h*0.05);
   }
 
@@ -370,7 +384,7 @@ async function render(ctx, cfg, imageObj, withText){
     eyebrow.split('\n').forEach(part=>{ part=part.trim(); if(part) elines=elines.concat(wrapLines(ctx, part, maxW)); });
     const elh = Math.round(es*1.5);
     let ey = cursorBottom;
-    for(let i=elines.length-1;i>=0;i--){ ctx.fillText(elines[i], M, ey); ey-=elh; }
+    for(let i=elines.length-1;i>=0;i--){ ctx.fillText(elines[i], ax, ey); ey-=elh; }
     ctx.restore();
   }
 }
@@ -379,9 +393,12 @@ function signature(ctx,w,h,M){
   const s = Math.round(w*0.021);
   ctx.font = `600 ${s}px Poppins, sans-serif`;
   ctx.fillStyle = hexA(state.textColor, 0.75);
+  const align=state.align||'left';
+  const ax = align==='center' ? Math.round(w/2) : (align==='right' ? w-M : M);
+  ctx.textAlign = align;
   ctx.save(); ctx.letterSpacing = `${Math.round(s*0.14)}px`;
   const txt='@BRIGADA.PICHANA';
-  ctx.fillText(txt, M, h - M);
+  ctx.fillText(txt, ax, h - M);
   ctx.restore();
   return Math.round(s*1.4);
 }
@@ -473,6 +490,10 @@ document.querySelectorAll('#logocolor button').forEach(b=>b.onclick=()=>{
 document.querySelectorAll('#txtcolor button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#txtcolor button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
   state.textColor=b.dataset.c; draw();
+});
+document.querySelectorAll('#align button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#align button').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  state.align=b.dataset.a; draw();
 });
 ['eyebrow','title','body'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{ draw(); analizarTono(); }));
 document.getElementById('onlyfirst').addEventListener('change',e=>{ state.onlyfirst=e.target.checked; draw(); });
