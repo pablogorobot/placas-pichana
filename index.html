@@ -168,6 +168,7 @@ input[type=range]::-moz-range-thumb{ width:16px; height:16px; border:none; borde
     <div class="field">
       <label>Título</label>
       <input type="text" id="title" placeholder="Escribí el título de la placa" value="Cuidamos el monte entre todas y todos">
+      <div class="rl"><span>Tamaño</span><input type="range" id="titleScale" min="55" max="160" value="100"><span class="val" id="titleScaleV">100%</span></div>
     </div>
     <div class="field">
       <label>Texto descriptivo</label>
@@ -230,7 +231,7 @@ const state = {
   w:1080, h:1350, style:'foto', accent:'#E3421E',
   images:[],           // {img, name}
   active:0, onlyfirst:true, logoColor:'blanco',
-  band:true, bandPos:45, fade:50, logoScale:100, logoX:50, logoY:5,
+  band:true, bandPos:45, fade:50, logoScale:100, logoX:50, logoY:5, titleScale:100,
 };
 const HUESO='#F2ECE1', INK='#1A1815';
 
@@ -324,13 +325,13 @@ async function render(ctx, cfg, imageObj, withText){
 
   // título (auto-ajuste de tamaño)
   if(title){
-    let ts = Math.round(w*(style==='frase'?0.085:0.072));
+    let ts = Math.round(w*(style==='frase'?0.085:0.072)*state.titleScale/100);
     let tLines, tlh;
     for(;;){
       ctx.font = `700 ${ts}px Poppins, sans-serif`;
       tLines = wrapLines(ctx, title, maxW);
       tlh = Math.round(ts*1.08);
-      if(tLines.length*tlh <= h*0.42 || ts<=Math.round(w*0.05)) break;
+      if(tLines.length*tlh <= h*0.58 || ts<=Math.round(w*0.05)) break;
       ts -= 4;
     }
     // barra de acento
@@ -463,6 +464,7 @@ function bindRange(id,fmt){ const el=document.getElementById(id), v=document.get
 bindRange('bandPos', v=>v+'%');
 bindRange('fade', v=>v+'%');
 bindRange('logoScale', v=>v+'%');
+bindRange('titleScale', v=>v+'%');
 bindRange('logoX', v=> v===50?'centro':(v<50?'← '+((50-v)*2)+'%':'→ '+((v-50)*2)+'%'));
 bindRange('logoY', v=>v+'%');
 document.getElementById('imgs').addEventListener('change', e=>{
